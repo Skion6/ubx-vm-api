@@ -1,69 +1,39 @@
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble
-
-# set version label
-ARG BUILD_DATE
-ARG VERSION
-LABEL build_version="[Mollomm1 Mod] Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="mollomm1"
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV DISPLAY=:1
+ENV VNC_PORT=5901
+ENV NOVNC_PORT=6080
 
-# prevent Ubuntu's firefox stub from being installed
-COPY root/etc/apt/preferences.d/firefox-no-snap /etc/apt/preferences.d/firefox-no-snap
+# Install system + desktop + browser
+RUN apt-get update && apt-get install -y \
+    xfce4 xfce4-goodies \
+    x11vnc xvfb \
+    wget curl git \
+    python3 python3-pip \
+    chromium-browser \
+    novnc websockify \
+    && apt-get clean
 
-RUN \
-  echo "**** install packages ****" && \
-  add-apt-repository -y ppa:mozillateam/ppa && \
-  apt-get update -y && \
-  DEBIAN_FRONTEND=noninteractive \
-  apt-get install --no-install-recommends -y \
-  dolphin \
-  jq \
-  wget \
-  firefox \
-  gwenview \
-  kde-config-gtk-style \
-  kdialog \
-  kfind \
-  khotkeys \
-  kio-extras \
-  knewstuff-dialog \
-  konsole \
-  ksystemstats \
-  kwin-addons \
-  kwin-x11 \
-  kwrite \
-  plasma-desktop \
-  plasma-workspace \
-  qml-module-qt-labs-platform \
-  systemsettings && \
-  echo "**** kde tweaks ****" && \
-  sed -i \
-  's/applications:org.kde.discover.desktop,/applications:org.kde.konsole.desktop,/g' \
-  /usr/share/plasma/plasmoids/org.kde.plasma.taskmanager/contents/config/main.xml
+# Create user
+RUN useradd -m user
+WORKDIR /home/user
 
-COPY options.json /
+# Set VNC password
+RUN mkdir ~/.vnc && \
+    x11vnc -storepasswd 1234 ~/.vnc/passwd
 
-COPY ./root/ /
+# noVNC setup
+RUN ln -s /usr/share/novnc/vnc.html /home/user/index.html
 
-RUN \
-  echo "**** running installapps.sh ****" && \
-  ls -la / && \
-  ls -la /root/ && \
-  chmod +x /installapps.sh && \
-  /installapps.sh && \
-  rm /installapps.sh && \
-  echo "**** installapps.sh completed ****"
+# Start script
+RUN echo '#!/bin/bash\n\
+Xvfb :1 -screen 0 1280x720x24 &\n\
+startxfce4 &\n\
+x11vnc -display :1 -forever -usepw -rfbport 5901 &\n\
+websockify --web=/usr/share/novnc/ 6080 localhost:5901\n\
+' > /start.sh && chmod +x /start.sh
 
-RUN \
-  echo "**** cleanup ****" && \
-  apt-get autoclean && \
-  rm -rf \
-  /config/.cache \
-  /var/lib/apt/lists/* \
-  /var/tmp/* \
-  /tmp/*
+EXPOSE 6080
 
-# ports and volumes
-EXPOSE 3000
-
+CMD ["/start.sh"]
