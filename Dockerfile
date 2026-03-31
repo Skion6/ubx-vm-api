@@ -13,7 +13,8 @@ ENV PORT=6080
 # ---------------------------
 # Install desktop, KDE apps, browsers, utilities
 # ---------------------------
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y snapd && \
+    snap install firefox \
     xfce4 xfce4-goodies \
     plasma-desktop plasma-workspace \
     dolphin \
