@@ -13,8 +13,8 @@ ENV PORT=6080
 # ---------------------------
 # Install desktop, KDE apps, browsers, utilities
 # ---------------------------
-RUN apt-get update && apt-get install -y snapd && \
-    snap install firefox \
+RUN apt-get update && apt-get install -y \
+    firefox \
     xfce4 xfce4-goodies \
     plasma-desktop plasma-workspace \
     dolphin \
@@ -30,7 +30,6 @@ RUN apt-get update && apt-get install -y snapd && \
     qml-module-qt-labs-platform \
     systemsettings \
     gwenview \
-    firefox \
     chromium-browser \
     x11vnc xvfb \
     novnc websockify \
