@@ -13,6 +13,26 @@ RUN apt-get update && apt-get install -y \
     python3 python3-pip \
     chromium-browser \
     novnc websockify \
+      dolphin \
+      jq \
+      wget \
+      firefox \
+      gwenview \
+      kde-config-gtk-style \
+      kdialog \
+      kfind \
+      khotkeys \
+      kio-extras \
+      knewstuff-dialog \
+      konsole \
+      ksystemstats \
+      kwin-addons \
+      kwin-x11 \
+      kwrite \
+      plasma-desktop \
+      plasma-workspace \
+      qml-module-qt-labs-platform \
+      systemsettings \
     && apt-get clean
 
 # Create user
